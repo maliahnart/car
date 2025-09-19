@@ -1,6 +1,9 @@
 import 'package:car/constants/custom_color.dart';
+import 'package:car/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import 'list_car_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,19 +14,32 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
+  // int _selectedIndex = 0;
+  // final List<Widget> _pages = [
+  //   HomeScreen(),
+  //   ListCarScreen(),
+  //   SettingsScreen(),
+  // ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(-787969),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            _buildBody(),
-          ],
+      // backgroundColor: Color(-1050881),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [Color(-1050881), Color(-1)],
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildHeader(context),
+              _buildBody(),
+            ],
+          ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavbar(),
+      // bottomNavigationBar: _buildBottomNavbar(),
     );
   }
 
@@ -37,9 +53,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF4679F5), Color(0xFF8B3AEB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          colors: [Color(0xFF3B82F6), Color(0xFF9333EA)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(5),
@@ -67,8 +83,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     'Xin chào!',
                     style: TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
                     ),
                   ),
                 ],
@@ -79,23 +95,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: () {},
                     icon: Image.asset('assets/images/Bell.png'),
                   ),
-                  IconButton(
-                    onPressed: () {
-                      context.go('/login');
-                    },
-                    icon: Image.asset('assets/images/Logout Rounded Left.png'),
+
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      color: Color(0xFF7E34F0)
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        context.go('/login');
+                      },
+                      icon: Image.asset('assets/images/Logout Rounded Left.png'),
+                    ),
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           const Text(
             'Hôm nay, Thứ Tư, 3 tháng 9, 2025',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white,
+            fontSize: 14),
           ),
-          const SizedBox(height: 24),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           _buildInfoCard(
             imagePath: 'assets/images/car_icon.png',
             title: 'Xe đang đỗ',
@@ -124,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 17, right: 17,top: 10,bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white.withAlpha((0.25 * 255).toInt()),
         borderRadius: BorderRadius.circular(15),
@@ -136,12 +159,12 @@ class _HomeScreenState extends State<HomeScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-              Text(title, style: const TextStyle(color: Colors.white70)),
+              Text(value, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+              Text(title, style: const TextStyle(color: Colors.white70, fontSize: 14)),
             ],
           ),
           const Spacer(),
-          Text(label, style: TextStyle(color: Colors.white70),)
+          Text(label, style: TextStyle(color: Colors.white70,fontSize: 12),)
         ],
       ),
     );
@@ -152,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Tính năng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+        const Text('Tính năng', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
         const SizedBox(height: 16,),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -164,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         const SizedBox(height: 24,),
         const Text('Danh sách xe trong bãi', style: TextStyle(fontWeight: FontWeight.bold,
-        fontSize: 18),),
+        fontSize: 14),),
         const SizedBox(height: 16,),
         _buildSearchBar(),
         const SizedBox(height: 40,),
@@ -177,7 +200,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(17),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(15),
@@ -190,10 +213,15 @@ class _HomeScreenState extends State<HomeScreen> {
               )
             ],
           ),
-          child: IconRounded(color: color, imagePath: imagePath),
+          child: Column(
+            children: [
+              IconRounded(color: color, imagePath: imagePath),
+              const SizedBox(height: 8,),
+              Text(label,style: TextStyle(color: Color(-13156015),fontSize: 14),)
+            ],
+          ),
+
         ),
-        const SizedBox(height: 8,),
-        Text(label,style: TextStyle(color: Colors.grey[700]),)
       ],
     );
   }
@@ -213,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Color(-986381),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
           borderSide: BorderSide(color: Colors.grey[300]!),
@@ -226,49 +254,55 @@ class _HomeScreenState extends State<HomeScreen> {
 
     );
   }
-  Widget  _buildBottomNavbar(){
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-        selectedItemColor: CustomColor.primaryBlue,
-        unselectedItemColor: Colors.grey[600],
-        backgroundColor: Colors.white,
-        elevation: 5.0,
-        currentIndex: 0,
-        items: [
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/images/home_icon_active.png',color: Colors.grey,),
-            activeIcon:Image.asset('assets/images/home_icon_active.png'),
-            label: 'Trang chủ',
-          ),
-          BottomNavigationBarItem(
-            icon: Image.asset('assets/images/list_car.png',color: Colors.grey,),
-            activeIcon: Image.asset('assets/images/list_car.png',color: Colors.blue,),
-            label: 'Danh sách xe',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'Cài đặt',
-          ),
-    ]);
-  }
+  // Widget  _buildBottomNavbar(){
+  //   return Scaffold(
+  //     body: IndexedStack(
+  //       index: _selectedIndex,
+  //       children: _pages,
+  //     ),
+  //      bottomNavigationBar: BottomNavigationBar(
+  //       type: BottomNavigationBarType.fixed,
+  //         selectedItemColor: CustomColor.primaryBlue,
+  //         unselectedItemColor: Colors.grey[600],
+  //         backgroundColor: Colors.white,
+  //         elevation: 5.0,
+  //         currentIndex: 0,
+  //         items: [
+  //           BottomNavigationBarItem(
+  //             icon: Image.asset('assets/images/home_icon_active.png',color: Colors.grey,),
+  //             activeIcon:Image.asset('assets/images/home_icon_active.png'),
+  //             label: 'Trang chủ',
+  //           ),
+  //           BottomNavigationBarItem(
+  //             icon: Image.asset('assets/images/list_car.png',color: Colors.grey,),
+  //             activeIcon: Image.asset('assets/images/list_car.png',color: Colors.blue,),
+  //             label: 'Danh sách xe',
+  //           ),
+  //           const BottomNavigationBarItem(
+  //             icon: Icon(Icons.settings_outlined),
+  //             activeIcon: Icon(Icons.settings),
+  //             label: 'Cài đặt',
+  //           ),
+  //     ],),
+  //   );
+  // }
   Widget _buildEmptyState() {
     return Center(
       child: Column(
         children: [
           // Icon(Icons.directions_car_outline, size: 60, color: Colors.grey[400]),
-          Container( padding: const EdgeInsets.all(15),
+          Container( padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
-            color: Colors.grey[300],
-            borderRadius: BorderRadius.circular(30),
+            color: Color(-789258),
+            borderRadius: BorderRadius.circular(40),
           ),
               child: Image.asset('assets/images/car_icon_reverse.png')),
           const SizedBox(height: 16),
-          const Text('Chưa có giao dịch nào', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+          const Text('Chưa có giao dịch nào', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
           const SizedBox(height: 8),
           Text(
             'Bãi đậu xe trống chưa có phương tiện đậu bên trong',
-            style: TextStyle(color: Colors.grey[600]),
+            style: TextStyle(color: Colors.grey[600],fontSize: 13),
             textAlign: TextAlign.center,
           ),
         ],

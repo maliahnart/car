@@ -1,6 +1,9 @@
 import 'package:car/config/app_router.dart';
 import 'package:flutter/material.dart';
-void main(){
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+void main() async{
+  // Load env file
+  await dotenv.load(fileName: "assets/.env");
   runApp(const MyApp());
 }
 class MyApp extends StatelessWidget {
