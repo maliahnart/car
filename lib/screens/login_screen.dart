@@ -35,7 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _checkLogin() async{
     final token = await TokenStorage.getToken();
     if(token != null && token.isNotEmpty){
-      context.go('/home');
+      context.go('/choose_parking');
+      // context.go('/home');
     }else{
       context.go('/login');
     }
@@ -90,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final token = result['data']['access_token'];
         await TokenStorage.saveToken(token);
         print("➡️ Chuyển sang trang Home");
-        context.go('/home');
+        context.go('/choose_parking');
       } else {
         print("❌ Đăng nhập thất bại - result null");
       }

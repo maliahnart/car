@@ -17,7 +17,7 @@ class AuthService {
 
   Future<Map<String, dynamic>?> login(String username, String password) async {
     try {
-      print("📡 Sending login request...");
+      // print("📡 Sending login request...");
 
       final response = await _dio.post(
         "auth/login",
@@ -34,19 +34,19 @@ class AuthService {
         ),
       );
 
-      print("📩 Response status: ${response.statusCode}");
-      print("📩 Response data: ${response.data}");
+      // print("📩 Response status: ${response.statusCode}");
+      // print("📩 Response data: ${response.data}");
 
       return response.data;
     } on DioException catch (e) {
-      print("🔥 Login failed!");
-      print("Status: ${e.response?.statusCode}");
-      print("Data: ${e.response?.data}");
+      // print("🔥 Login failed!");
+      // print("Status: ${e.response?.statusCode}");
+      // print("Data: ${e.response?.data}");
       print("Message: ${e.message}");
       return null;
-    } catch (e, s) {
-      print("💥 Unexpected error: $e");
-      print(s);
+    } catch (e) {
+      // print("💥 Unexpected error: $e");
+      // print(s);
       return null;
     }
   }

@@ -1,11 +1,14 @@
-import 'package:car/constants/custom_color.dart';
+import 'package:car/config/state/parking_lot_bloc.dart';
+import 'package:car/config/token_storage.dart';
+import 'package:car/models/parking_lot.dart';
 import 'package:car/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
-import 'list_car_screen.dart';
-
 class HomeScreen extends StatefulWidget {
+
   const HomeScreen({super.key});
 
   @override
@@ -14,12 +17,12 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _searchController = TextEditingController();
-  // int _selectedIndex = 0;
-  // final List<Widget> _pages = [
-  //   HomeScreen(),
-  //   ListCarScreen(),
-  //   SettingsScreen(),
-  // ];
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,8 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Color(0xFF7E34F0)
                     ),
                     child: IconButton(
-                      onPressed: () {
+                      onPressed: () async{
+                        await TokenStorage.clearToken();
                         context.go('/login');
+
                       },
                       icon: Image.asset('assets/images/Logout Rounded Left.png'),
                     ),
@@ -180,9 +185,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildFeatureCard(imagePath: 'assets/images/camera_icon.png', label: 'Check-in',color: Color(-1050881)),
-            _buildFeatureCard(imagePath: 'assets/images/qr_icon.png', label: 'Check-out',color: Color(-2067)),
-            _buildFeatureCard(imagePath: 'assets/images/Chart Bar.png', label: 'Thống kê', color: Color(-330241)),
+            _buildFeatureCard(imagePath: 'assets/images/camera_icon.png', label: 'Check-in',color: Color(-1050881), onTap: () => context.push('/check_in_car'),),
+            _buildFeatureCard(imagePath: 'assets/images/qr_icon.png', label: 'Check-out',color: Color(-2067), onTap: () => context.go('/home'),),
+            _buildFeatureCard(imagePath: 'assets/images/Chart Bar.png', label: 'Thống kê', color: Color(-330241), onTap: () => context.go('/home'),),
           ],
         ),
         const SizedBox(height: 24,),
@@ -196,33 +201,36 @@ class _HomeScreenState extends State<HomeScreen> {
     ),);
   }
 
-  Widget _buildFeatureCard({required String imagePath, required String label, required Color color}){
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(17),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withAlpha((0.1*255).toInt()),
-                spreadRadius: 2,
-                blurRadius: 10,
-                offset: const Offset(0,5),
-              )
-            ],
+  Widget _buildFeatureCard({required String imagePath, required String label, required Color color,required VoidCallback onTap}){
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(17),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withAlpha((0.1*255).toInt()),
+                  spreadRadius: 2,
+                  blurRadius: 10,
+                  offset: const Offset(0,5),
+                )
+              ],
+            ),
+            child: Column(
+              children: [
+                IconRounded(color: color, imagePath: imagePath),
+                const SizedBox(height: 8,),
+                Text(label,style: TextStyle(color: Color(-13156015),fontSize: 14),)
+              ],
+            ),
+      
           ),
-          child: Column(
-            children: [
-              IconRounded(color: color, imagePath: imagePath),
-              const SizedBox(height: 8,),
-              Text(label,style: TextStyle(color: Color(-13156015),fontSize: 14),)
-            ],
-          ),
-
-        ),
-      ],
+        ],
+      ),
     );
   }
 
