@@ -613,7 +613,6 @@
 //   bool _isFilterExpanded = true;
 //     bool _isFetching = false;
 
-
 //   // 1. initState chỉ gọi event MỘT LẦN khi BLoC được tạo
 //   @override
 //   void initState() {
@@ -715,14 +714,14 @@
 //               final metrics = notification.metrics;
 //               if (metrics.pixels >= metrics.maxScrollExtent * 0.9) {
 //                 final currentState = context.read<TransactionListBloc>().state;
-                
+
 //               if (!currentState.hasReachedMax && !_isFetching) {
-                
+
 //                 // BƯỚC 1: "NGẮT CẦU CHÌ" -> Ngăn các event tiếp theo
 //                 setState(() {
 //                   _isFetching = true;
 //                 });
-                
+
 //                 // BƯỚC 2: Gửi event đi
 //                 context.read<TransactionListBloc>().add(TransactionsFetched());
 //               }
@@ -762,7 +761,6 @@
 //     );
 //   }
 
-  
 //   Widget _buildFilterSection(TransactionListState state) {
 //     return Container(
 //       padding: const EdgeInsets.all(14),
@@ -857,7 +855,7 @@
 //                 print("\n👆 Bấm nút 'Tất cả'.");
 //                 print("   - Trạng thái BLoC *TRƯỚC KHI* gửi event:");
 //                 print("     -> state.parkingStatus hiện tại là: ${state.parkingStatus}");
-                
+
 //                 // Gửi event đi mà không cần điều kiện if
 //                 context.read<TransactionListBloc>().add(
 //                       const TransactionsRefreshed(parkingStatus: null),
@@ -874,7 +872,7 @@
 //                 // ================== LOGGING HERE ==================
 //                 print("\n👆 Bấm nút 'Xe trong bãi'.");
 //                 print("   - State hiện tại (trước khi check): state.parkingStatus = ${state.parkingStatus}");
-                
+
 //                 if (state.parkingStatus != 1) {
 //                   print("   ✅ Điều kiện (state.parkingStatus != 1) là TRUE. Gửi event...");
 //                   context.read<TransactionListBloc>().add(
@@ -1294,14 +1292,14 @@ class ListCarScreen extends StatefulWidget {
 class _ListCarScreenState extends State<ListCarScreen> {
   final _searchController = TextEditingController();
   bool _isFilterExpanded = true;
-    bool _isFetching = false;
-
+  bool _isFetching = false;
 
   // 1. initState chỉ gọi event MỘT LẦN khi BLoC được tạo
   @override
   void initState() {
     super.initState();
-    if (context.read<TransactionListBloc>().state.status == TransactionListStatus.initial) {
+    if (context.read<TransactionListBloc>().state.status ==
+        TransactionListStatus.initial) {
       context.read<TransactionListBloc>().add(TransactionsFetched());
     }
   }
@@ -1339,138 +1337,233 @@ class _ListCarScreenState extends State<ListCarScreen> {
           ),
         ),
         body: BlocListener<TransactionListBloc, TransactionListState>(
-        listener: (context, state) {
-          if (state.status == TransactionListStatus.success || state.status == TransactionListStatus.failure) {
-            setState(() {
-              _isFetching = false;
-            });
-          }
-        },
-        child: RefreshIndicator(  // <--- DI CHUYỂN RefreshIndicator RA ĐÂY
-          onRefresh: () async {
-            // Logic onRefresh bây giờ sẽ đọc state từ BLoC
-            // để đảm bảo gửi đúng các filter hiện tại
-            final state = context.read<TransactionListBloc>().state;
-            context.read<TransactionListBloc>().add(
-                  TransactionsRefreshed(
-                    parkingStatus: state.parkingStatus,
-                    plateNumber: state.plateNumber,
-                    transactionStatus: state.transactionStatus,
-                    expiredParking: state.expiredParking,
-                  ),
-                );
-          },
-          child: BlocBuilder<TransactionListBloc, TransactionListState>(
-            builder: (context, state) {
-              print("--- BlocBuilder is building with Status: ${state.status}, Transaction Count from STATE: ${state.transactions.length} ---");
-              switch (state.status) {
-                case TransactionListStatus.failure:
-                  // Bây giờ màn hình lỗi cũng có thể kéo để refresh
-                  // Để kéo hoạt động tốt hơn trên màn hình không scroll được,
-                  // ta bọc nó trong một ListView
-                  return ListView(
-                    children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.6,
-                        child: Center(
-                          child: Text('Lỗi tải dữ liệu: ${state.errorMessage}'),
-                        ),
-                      ),
-                    ],
-                  );
-                case TransactionListStatus.initial:
-                  return const Center(child: CircularProgressIndicator());
-                case TransactionListStatus.loading:
-                case TransactionListStatus.success:
-                  if (state.transactions.isEmpty && state.status == TransactionListStatus.loading) {
-                     return const Center(child: CircularProgressIndicator());
-                  }
-                  // Gọi hàm build list như cũ
-                  return _buildTransactionList(state);
-              }
-            },
-          ),
-        ),
-      ),
-    ),
-  );
-  }
-
-  // 3. NotificationListener xử lý cuộn một cách an toàn
-  Widget _buildTransactionList(TransactionListState state) {
-    // return RefreshIndicator(
-    //   onRefresh: () async {
-    //     context.read<TransactionListBloc>().add(
-    //           TransactionsRefreshed(
-    //             parkingStatus: state.parkingStatus,
-    //             plateNumber: state.plateNumber,
-    //             transactionStatus: state.transactionStatus,
-    //             expiredParking: state.expiredParking,
-    //           ),
-    //         );
-    //   },
-    //   child: Container(
-
-       return Container(decoration: const BoxDecoration(
-          color: Color(-789258),
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
-          child: NotificationListener<ScrollNotification>(
-            onNotification: (notification) {
-              final metrics = notification.metrics;
-              if (metrics.pixels >= metrics.maxScrollExtent * 0.9) {
-                final currentState = context.read<TransactionListBloc>().state;
-                
-              if (!currentState.hasReachedMax && !_isFetching) {
-                
-                // BƯỚC 1: "NGẮT CẦU CHÌ" -> Ngăn các event tiếp theo
-                setState(() {
-                  _isFetching = true;
-                });
-                
-                // BƯỚC 2: Gửi event đi
-                context.read<TransactionListBloc>().add(TransactionsFetched());
-              }
+          listener: (context, state) {
+            if (state.status == TransactionListStatus.success ||
+                state.status == TransactionListStatus.failure) {
+              setState(() {
+                _isFetching = false;
+              });
             }
-            return false;
           },
-            child: ListView.builder(
-              itemCount: state.transactions.length + 2,
-              itemBuilder: (context, index) {
-                if (index == 0) return _buildFilterSection(state);
-                if (index <= state.transactions.length) {
-                  final transaction = state.transactions[index - 1];
-                  print("--- UI is building car card for INDEX: ${index - 1}, Plate: ${transaction.plateNumber} ---");
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: _buildCarCard(transaction),
-                  );
+          child: RefreshIndicator(
+            // <--- DI CHUYỂN RefreshIndicator RA ĐÂY
+            onRefresh: () async {
+              // Logic onRefresh bây giờ sẽ đọc state từ BLoC
+              // để đảm bảo gửi đúng các filter hiện tại
+              final state = context.read<TransactionListBloc>().state;
+              context.read<TransactionListBloc>().add(
+                TransactionsRefreshed(
+                  parkingStatus: state.parkingStatus,
+                  plateNumber: state.plateNumber,
+                  transactionStatus: state.transactionStatus,
+                  expiredParking: state.expiredParking,
+                ),
+              );
+            },
+            child: BlocBuilder<TransactionListBloc, TransactionListState>(
+              builder: (context, state) {
+                print(
+                  "--- BlocBuilder is building with Status: ${state.status}, Transaction Count from STATE: ${state.transactions.length} ---",
+                );
+                switch (state.status) {
+                  case TransactionListStatus.failure:
+                    // Bây giờ màn hình lỗi cũng có thể kéo để refresh
+                    // Để kéo hoạt động tốt hơn trên màn hình không scroll được,
+                    // ta bọc nó trong một ListView
+                    return ListView(
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: Center(
+                            child: Text(
+                              'Lỗi tải dữ liệu: ${state.errorMessage}',
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  case TransactionListStatus.initial:
+                    return const Center(child: CircularProgressIndicator());
+                  case TransactionListStatus.loading:
+                  case TransactionListStatus.success:
+                    if (state.transactions.isEmpty &&
+                        state.status == TransactionListStatus.loading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    // Gọi hàm build list như cũ
+                    return _buildTransactionList(state);
                 }
-                if (state.hasReachedMax && state.transactions.isEmpty) {
-                  return Padding(
-                    padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
-                    child: const Center(child: Text('Không có giao dịch nào.')),
-                  );
-                }
-                if (!state.hasReachedMax) {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-                return const SizedBox.shrink();
               },
             ),
           ),
         ),
-    //   ),
-    // );
-       );
+      ),
+    );
   }
 
-  
+  // 3. NotificationListener xử lý cuộn một cách an toàn
+  // Widget _buildTransactionList(TransactionListState state) {
+  //   // return RefreshIndicator(
+  //   //   onRefresh: () async {
+  //   //     context.read<TransactionListBloc>().add(
+  //   //           TransactionsRefreshed(
+  //   //             parkingStatus: state.parkingStatus,
+  //   //             plateNumber: state.plateNumber,
+  //   //             transactionStatus: state.transactionStatus,
+  //   //             expiredParking: state.expiredParking,
+  //   //           ),
+  //   //         );
+  //   //   },
+  //   //   child: Container(
+
+  //      return Container(decoration: const BoxDecoration(
+  //         color: Color(-789258),
+  //         borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+  //       ),
+  //       child: ClipRRect(
+  //         borderRadius: const BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+  //         child: NotificationListener<ScrollNotification>(
+  //           onNotification: (notification) {
+  //             final metrics = notification.metrics;
+  //             if (metrics.pixels >= metrics.maxScrollExtent * 0.9) {
+  //               final currentState = context.read<TransactionListBloc>().state;
+
+  //             if (!currentState.hasReachedMax && !_isFetching) {
+
+  //               // BƯỚC 1: "NGẮT CẦU CHÌ" -> Ngăn các event tiếp theo
+  //               setState(() {
+  //                 _isFetching = true;
+  //               });
+
+  //               // BƯỚC 2: Gửi event đi
+  //               context.read<TransactionListBloc>().add(TransactionsFetched());
+  //             }
+  //           }
+  //           return false;
+  //         },
+  //           child: ListView.builder(
+  //             itemCount: state.transactions.length + 2,
+  //             itemBuilder: (context, index) {
+  //               if (index == 0) return _buildFilterSection(state);
+  //               if (index <= state.transactions.length) {
+  //                 final transaction = state.transactions[index - 1];
+  //                 print("--- UI is building car card for INDEX: ${index - 1}, Plate: ${transaction.plateNumber} ---");
+  //                 return Padding(
+  //                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //                   child: _buildCarCard(transaction),
+  //                 );
+  //               }
+  //               if (state.hasReachedMax && state.transactions.isEmpty) {
+  //                 return Padding(
+  //                   padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
+  //                   child: const Center(child: Text('Không có giao dịch nào.')),
+  //                 );
+  //               }
+  //               if (!state.hasReachedMax) {
+  //                 return const Padding(
+  //                   padding: EdgeInsets.symmetric(vertical: 16.0),
+  //                   child: Center(child: CircularProgressIndicator()),
+  //                 );
+  //               }
+  //               return const SizedBox.shrink();
+  //             },
+  //           ),
+  //         ),
+  //       ),
+  //   //   ),
+  //   // );
+  //      );
+  // }
+  // Thay thế phần _buildTransactionList trong code của bạn
+Widget _buildTransactionList(TransactionListState state) {
+  return Container(
+    decoration: const BoxDecoration(
+      color: Color(-789258),
+      borderRadius: BorderRadius.only(
+        topLeft: Radius.circular(24), 
+        topRight: Radius.circular(24)
+      ),
+    ),
+    child: ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(24), 
+        topRight: Radius.circular(24)
+      ),
+      child: Column(
+        children: [
+          // 1. FILTER SECTION - CỐ ĐỊNH, KHÔNG REBUILD
+          _buildFilterSection(state),
+          
+          // 2. CONTENT SECTION - CHỈ PHẦN NÀY MỚI REBUILD
+          Expanded(
+            child: NotificationListener<ScrollNotification>(
+                onNotification: (notification) {
+                  final metrics = notification.metrics;
+                  if (metrics.pixels >= metrics.maxScrollExtent * 0.9) {
+                    final currentState = context.read<TransactionListBloc>().state;
+                    
+                    if (!currentState.hasReachedMax && !_isFetching) {
+                      setState(() {
+                        _isFetching = true;
+                      });
+                      context.read<TransactionListBloc>().add(TransactionsFetched());
+                    }
+                  }
+                  return false;
+                },
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                  child: _buildContentList(state), // ← CHỈ CONTENT NÀY MỚI ANIMATION
+                ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+// Tách riêng content list
+Widget _buildContentList(TransactionListState state) {
+  return ListView.builder(
+    key: ValueKey('content_${state.parkingStatus}_${state.plateNumber}_${state.transactionStatus}'),
+    padding: EdgeInsets.zero, // Bỏ padding mặc định
+    itemCount: state.transactions.length + 1, // +1 cho loading indicator cuối
+    itemBuilder: (context, index) {
+      // Không còn filter section ở đây nữa
+      if (index < state.transactions.length) {
+        final transaction = state.transactions[index];
+        print("--- UI is building car card for INDEX: $index, Plate: ${transaction.plateNumber} ---");
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: _buildCarCard(transaction),
+        );
+      }
+      
+      // Loading indicator cuối list (pagination)
+      if (state.hasReachedMax && state.transactions.isEmpty) {
+        return Padding(
+          padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.2),
+          child: const Center(child: Text('Không có giao dịch nào.')),
+        );
+      }
+      if (!state.hasReachedMax) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16.0),
+          child: Center(child: CircularProgressIndicator()),
+        );
+      }
+      return const SizedBox.shrink();
+    },
+  );
+}
+
   Widget _buildFilterSection(TransactionListState state) {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1537,16 +1630,16 @@ class _ListCarScreenState extends State<ListCarScreen> {
       ),
       onSubmitted: (value) {
         context.read<TransactionListBloc>().add(
-              TransactionsRefreshed(
-                parkingStatus: state.parkingStatus,
-                plateNumber: value.trim(),
-              ),
-            );
+          TransactionsRefreshed(
+            parkingStatus: state.parkingStatus,
+            plateNumber: value.trim(),
+          ),
+        );
       },
     );
   }
 
- Widget _buildClassifyCar(TransactionListState state) {
+  Widget _buildClassifyCar(TransactionListState state) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(-789258),
@@ -1558,58 +1651,77 @@ class _ListCarScreenState extends State<ListCarScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildFilterChipTest(
-              label: 'Tất cả ${state.parkingStatus == null ? '(${state.totalCount})' : ''}',
+              label:
+                  'Tất cả ${state.parkingStatus == null ? '(${state.totalCount})' : ''}',
               isSelected: state.parkingStatus == null,
               onTap: () {
-                  // ================== LOGGING HERE ==================
+                // ================== LOGGING HERE ==================
                 print("\n👆 Bấm nút 'Tất cả'.");
                 print("   - Trạng thái BLoC *TRƯỚC KHI* gửi event:");
-                print("     -> state.parkingStatus hiện tại là: ${state.parkingStatus}");
-                
+                print(
+                  "     -> state.parkingStatus hiện tại là: ${state.parkingStatus}",
+                );
+
                 // Gửi event đi mà không cần điều kiện if
                 context.read<TransactionListBloc>().add(
-                      const TransactionsRefreshed(parkingStatus: null),
-                    );
-                print("   ✅ Đã gửi event: TransactionsRefreshed(parkingStatus: null)");
+                  const TransactionsRefreshed(parkingStatus: null),
+                );
+                print(
+                  "   ✅ Đã gửi event: TransactionsRefreshed(parkingStatus: null)",
+                );
                 print("-------------------------------------------------");
                 // ==================================================
               },
             ),
             _buildFilterChipTest(
-              label: 'Xe trong bãi ${state.parkingStatus == 1 ? '(${state.totalCount})' : ''}',
+              label:
+                  'Xe trong bãi ${state.parkingStatus == 1 ? '(${state.totalCount})' : ''}',
               isSelected: state.parkingStatus == 1,
               onTap: () {
                 // ================== LOGGING HERE ==================
                 print("\n👆 Bấm nút 'Xe trong bãi'.");
-                print("   - State hiện tại (trước khi check): state.parkingStatus = ${state.parkingStatus}");
-                
+                print(
+                  "   - State hiện tại (trước khi check): state.parkingStatus = ${state.parkingStatus}",
+                );
+
                 if (state.parkingStatus != 1) {
-                  print("   ✅ Điều kiện (state.parkingStatus != 1) là TRUE. Gửi event...");
+                  print(
+                    "   ✅ Điều kiện (state.parkingStatus != 1) là TRUE. Gửi event...",
+                  );
                   context.read<TransactionListBloc>().add(
-                        const TransactionsRefreshed(parkingStatus: 1),
-                      );
+                    const TransactionsRefreshed(parkingStatus: 1),
+                  );
                 } else {
-                  print("   ❌ Điều kiện (state.parkingStatus != 1) là FALSE. KHÔNG gửi event.");
+                  print(
+                    "   ❌ Điều kiện (state.parkingStatus != 1) là FALSE. KHÔNG gửi event.",
+                  );
                 }
                 print("-------------------------------------------------");
                 // ==================================================
               },
             ),
             _buildFilterChipTest(
-              label: 'Đã ra ${state.parkingStatus == 2 ? '(${state.totalCount})' : ''}',
+              label:
+                  'Đã ra ${state.parkingStatus == 2 ? '(${state.totalCount})' : ''}',
               isSelected: state.parkingStatus == 2,
               onTap: () {
                 // ================== LOGGING HERE ==================
                 print("\n👆 Bấm nút 'Đã ra'.");
-                print("   - State hiện tại (trước khi check): state.parkingStatus = ${state.parkingStatus}");
+                print(
+                  "   - State hiện tại (trước khi check): state.parkingStatus = ${state.parkingStatus}",
+                );
 
                 if (state.parkingStatus != 2) {
-                   print("   ✅ Điều kiện (state.parkingStatus != 2) là TRUE. Gửi event...");
+                  print(
+                    "   ✅ Điều kiện (state.parkingStatus != 2) là TRUE. Gửi event...",
+                  );
                   context.read<TransactionListBloc>().add(
-                        const TransactionsRefreshed(parkingStatus: 2),
-                      );
+                    const TransactionsRefreshed(parkingStatus: 2),
+                  );
                 } else {
-                  print("   ❌ Điều kiện (state.parkingStatus != 2) là FALSE. KHÔNG gửi event.");
+                  print(
+                    "   ❌ Điều kiện (state.parkingStatus != 2) là FALSE. KHÔNG gửi event.",
+                  );
                 }
                 print("-------------------------------------------------");
                 // ==================================================
@@ -1621,125 +1733,162 @@ class _ListCarScreenState extends State<ListCarScreen> {
     );
   }
 
-  Widget _buildAdvancedFilters(TransactionListState state) {
-    void _refreshWithNewFilters({
-      int? payment,
-      String? expired,
-    }) {
-      context.read<TransactionListBloc>().add(
-            TransactionsRefreshed(
-              parkingStatus: state.parkingStatus,
-              plateNumber: state.plateNumber,
-              transactionStatus: payment,
-              expiredParking: expired,
-            ),
-          );
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(-1),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey),
+ Widget _buildAdvancedFilters(TransactionListState state) {
+  void _refreshWithNewFilters({
+    int? payment,
+    String? expired,
+  }) {
+    context.read<TransactionListBloc>().add(
+      TransactionsRefreshed(
+        parkingStatus: state.parkingStatus,
+        plateNumber: state.plateNumber,
+        transactionStatus: payment,
+        expiredParking: expired,
       ),
-      padding: const EdgeInsets.only(top: 16),
+    );
+  }
+
+  return Container(
+    decoration: BoxDecoration(
+      color: const Color(-1),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: Colors.grey),
+    ),
+    // GIẢI PHÁP 1: Giới hạn chiều cao tối đa
+    constraints: BoxConstraints(
+      maxHeight: MediaQuery.of(context).size.height * 0.4, // Tối đa 40% màn hình
+    ),
+    child: SingleChildScrollView( // GIẢI PHÁP 2: Cho phép scroll trong filter
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(12.0), // Giảm padding
         child: Column(
+          mainAxisSize: MainAxisSize.min, // QUAN TRỌNG: Chỉ chiếm space cần thiết
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Bộ lọc nâng cao',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8), // Giảm spacing
+            
+            // Section 1: Thanh toán
             const Text('Thanh toán', style: TextStyle(fontSize: 12)),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildFilterChip(
-                  label: 'Tất cả',
-                  isSelected: state.transactionStatus == null,
-                  onTap: () => _refreshWithNewFilters(payment: null, expired: state.expiredParking),
-                  isPrimary: true,
-                ),
-                _buildFilterChip(
-                  label: 'Đã thanh toán',
-                  isSelected: state.transactionStatus == 1,
-                  onTap: () => _refreshWithNewFilters(payment: 1, expired: state.expiredParking),
-                  isPrimary: true,
-                ),
-                _buildFilterChip(
-                  label: 'Chưa thanh toán',
-                  isSelected: state.transactionStatus == 0,
-                  onTap: () => _refreshWithNewFilters(payment: 0, expired: state.expiredParking),
-                  isPrimary: true,
-                ),
+            const SizedBox(height: 6),
+            _buildCompactFilterRow(
+              filters: [
+                ('Tất cả', state.transactionStatus == null, () => _refreshWithNewFilters(payment: null, expired: state.expiredParking)),
+                ('Đã thanh toán', state.transactionStatus == 1, () => _refreshWithNewFilters(payment: 1, expired: state.expiredParking)),
+                ('Chưa thanh toán', state.transactionStatus == 0, () => _refreshWithNewFilters(payment: 0, expired: state.expiredParking)),
               ],
             ),
-            const SizedBox(height: 12),
+            
+            const SizedBox(height: 10), // Giảm spacing
+            
+            // Section 2: Thời gian gửi xe
             const Text('Thời gian gửi xe', style: TextStyle(fontSize: 12)),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildFilterChip(
-                  label: 'Tất cả',
-                  isSelected: state.expiredParking == null,
-                  onTap: () => _refreshWithNewFilters(payment: state.transactionStatus, expired: null),
-                  isPrimary: true,
-                ),
-                _buildFilterChip(
-                  label: 'Quá hạn',
-                  isSelected: state.expiredParking == 'EXPIRED',
-                  onTap: () => _refreshWithNewFilters(payment: state.transactionStatus, expired: 'EXPIRED'),
-                  isPrimary: true,
-                ),
-                _buildFilterChip(
-                  label: 'Chưa quá hạn',
-                  isSelected: state.expiredParking == 'NOT_EXPIRED',
-                  onTap: () => _refreshWithNewFilters(payment: state.transactionStatus, expired: 'NOT_EXPIRED'),
-                  isPrimary: true,
-                ),
+            const SizedBox(height: 6),
+            _buildCompactFilterRow(
+              filters: [
+                ('Tất cả', state.expiredParking == null, () => _refreshWithNewFilters(payment: state.transactionStatus, expired: null)),
+                ('Quá hạn', state.expiredParking == 'EXPIRED', () => _refreshWithNewFilters(payment: state.transactionStatus, expired: 'EXPIRED')),
+                ('Chưa quá hạn', state.expiredParking == 'NOT_EXPIRED', () => _refreshWithNewFilters(payment: state.transactionStatus, expired: 'NOT_EXPIRED')),
               ],
             ),
-            const SizedBox(height: 20),
+            
+            const SizedBox(height: 12), // Giảm bottom spacing
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildFilterChip({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-    bool isPrimary = false,
-  }) {
-    double totalPadding = 22;
-    double chipWidth = (MediaQuery.of(context).size.width - totalPadding * 2.66) / 3;
-
-    return SizedBox(
-      width: chipWidth,
-      child: ChoiceChip(
-        padding: const EdgeInsets.all(0),
-        label: Center(child: Text(label, textAlign: TextAlign.center)),
-        selected: isSelected,
-        onSelected: (_) => onTap(),
-        backgroundColor: Colors.grey[200],
-        labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-        selectedColor: isPrimary ? const Color(-12877066) : const Color(-789258),
-        labelStyle: TextStyle(
-          color: isSelected && isPrimary ? Colors.white : const Color(-11840157),
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          fontSize: 12,
+// Widget compact cho filter row
+Widget _buildCompactFilterRow({
+  required List<(String, bool, VoidCallback)> filters,
+}) {
+  return Row(
+    children: filters.map((filter) {
+      final (label, isSelected, onTap) = filter;
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+          child: _buildCompactFilterChip(
+            label: label,
+            isSelected: isSelected,
+            onTap: onTap,
+          ),
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        showCheckmark: false,
+      );
+    }).toList(),
+  );
+}
+
+// Compact filter chip với height cố định
+Widget _buildCompactFilterChip({
+  required String label,
+  required bool isSelected,
+  required VoidCallback onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
+      height: 32, // CHIỀU CAO CỐ ĐỊNH - không bị thay đổi
+      decoration: BoxDecoration(
+        color: isSelected ? const Color(-12877066) : Colors.grey[200],
+        borderRadius: BorderRadius.circular(8),
       ),
-    );
-  }
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(-11840157),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontSize: 11, // Font nhỏ hơn
+          ),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+      ),
+    ),
+  );
+}
+
+  // Widget _buildFilterChip({
+  //   required String label,
+  //   required bool isSelected,
+  //   required VoidCallback onTap,
+  //   bool isPrimary = false,
+  // }) {
+  //   double totalPadding = 22;
+  //   double chipWidth =
+  //       (MediaQuery.of(context).size.width - totalPadding * 2.66) / 3;
+
+  //   return SizedBox(
+  //     width: chipWidth,
+  //     child: ChoiceChip(
+  //       padding: const EdgeInsets.all(0),
+  //       label: Center(child: Text(label, textAlign: TextAlign.center)),
+  //       selected: isSelected,
+  //       onSelected: (_) => onTap(),
+  //       backgroundColor: Colors.grey[200],
+  //       labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+  //       selectedColor: isPrimary
+  //           ? const Color(-12877066)
+  //           : const Color(-789258),
+  //       labelStyle: TextStyle(
+  //         color: isSelected && isPrimary
+  //             ? Colors.white
+  //             : const Color(-11840157),
+  //         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  //         fontSize: 12,
+  //       ),
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  //       showCheckmark: false,
+  //     ),
+  //   );
+  // }
 
   Widget _buildFilterChipTest({
     required String label,
@@ -1770,7 +1919,9 @@ class _ListCarScreenState extends State<ListCarScreen> {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? const Color(-14326805) : const Color(-11840157),
+              color: isSelected
+                  ? const Color(-14326805)
+                  : const Color(-11840157),
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               fontSize: 14,
             ),
@@ -1838,7 +1989,9 @@ class _ListCarScreenState extends State<ListCarScreen> {
                       ),
                       _buildStatusChip(
                         text: isPaid == 1 ? 'Đã thanh toán' : 'Chưa thanh toán',
-                        color: isPaid == 1 ? const Color(-15293622) : const Color(-1419252),
+                        color: isPaid == 1
+                            ? const Color(-15293622)
+                            : const Color(-1419252),
                       ),
                     ],
                   ),
@@ -1846,7 +1999,9 @@ class _ListCarScreenState extends State<ListCarScreen> {
                   Row(
                     children: [
                       Text(
-                        transaction.paymentType == "CARD" ? 'Điện tử' : 'Tiền mặt',
+                        transaction.paymentType == "CARD"
+                            ? 'Điện tử'
+                            : 'Tiền mặt',
                         style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                       Expanded(
@@ -1858,7 +2013,9 @@ class _ListCarScreenState extends State<ListCarScreen> {
                         ),
                       ),
                       Text(
-                        isOverdue == "EXPIRED" ? 'Quá thời gian' : 'Còn thời gian',
+                        isOverdue == "EXPIRED"
+                            ? 'Quá thời gian'
+                            : 'Còn thời gian',
                         style: TextStyle(color: Colors.grey[600]),
                       ),
                     ],
