@@ -25,6 +25,7 @@ class TransactionListBloc extends Bloc<TransactionListEvent, TransactionListStat
     TransactionsFetched event,
     Emitter<TransactionListState> emit,
   ) async {
+     print("--- BLoC NHẬN event TransactionsFetched. hasReachedMax hiện tại là: ${state.hasReachedMax} ---");
     if (state.hasReachedMax) return;
 
     try {
@@ -39,13 +40,18 @@ class TransactionListBloc extends Bloc<TransactionListEvent, TransactionListStat
         size: _pageSize,
         token: token,
       );
+        print("--- API Fetched Page: ${state.currentPage}, Items: ${transactionPage.transactions.length}, Total: ${transactionPage.totalCount} ---");
 
+     final bool reachedMax = transactionPage.transactions.isEmpty ||
+        transactionPage.transactions.length < _pageSize;
       emit(
         state.copyWith(
           status: TransactionListStatus.success,
           transactions: List.of(state.transactions)..addAll(transactionPage.transactions),
           currentPage: state.currentPage + 1,
-          hasReachedMax: (state.transactions.length + transactionPage.transactions.length) >= transactionPage.totalCount,
+          // hasReachedMax: (state.transactions.length + transactionPage.transactions.length) >= transactionPage.totalCount,
+          totalCount: transactionPage.totalCount,
+          hasReachedMax: reachedMax
         ),
       );
     } catch (e) {
@@ -67,11 +73,15 @@ Future<void> _onTransactionsRefreshed(
       status: TransactionListStatus.loading,
       parkingStatus: event.parkingStatus, 
       plateNumber: event.plateNumber,
+      transactionStatus: event.transactionStatus, 
+      expiredParking: event.expiredParking, 
     
     ));
 
+ 
     final loadingState = state;
     print("--- BLoC ĐÃ EMIT state loading với parkingStatus: ${loadingState.parkingStatus} ---");
+      print("--- BLoC EMIT LOADING STATE: ${loadingState.toString()}"); // << THÊM PRINT
 
 
     final token = await TokenStorage.getToken();
@@ -83,10 +93,13 @@ Future<void> _onTransactionsRefreshed(
       lotId: lotId,
       parkingStatus: currentState.parkingStatus,
       plateNumber: currentState.plateNumber,
+      transactionStatus: currentState.transactionStatus, 
+      expiredParking: currentState.expiredParking, 
       page: 0,
       size: _pageSize,
       token: token,
     );
+     print("--- API Refreshed, Items: ${transactionPage.transactions.length}, Total: ${transactionPage.totalCount} ---");
 
     emit(
       currentState.copyWith(
@@ -94,8 +107,10 @@ Future<void> _onTransactionsRefreshed(
         transactions: transactionPage.transactions,
         currentPage: 1,
         hasReachedMax: transactionPage.transactions.length >= transactionPage.totalCount,
+          totalCount: transactionPage.totalCount,
       ),
     );
+    print("--- BLoC EMIT SUCCESS STATE: ${currentState.toString()}"); // << THÊM PRINT
   } catch (e) {
     emit(state.copyWith(
       status: TransactionListStatus.failure,

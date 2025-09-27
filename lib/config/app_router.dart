@@ -131,7 +131,7 @@ class AppRouter {
                     create: (context) => TransactionListBloc(
                       transactionService: TransactionService(),
                       lotId: selectedLotId,
-                    )..add(const TransactionsRefreshed(parkingStatus: 1)),
+                    ),
                     child: const ListCarScreen(),
                   );
                 }
